@@ -1,0 +1,24 @@
+import pandas as pd
+
+# Load the dataset
+churn = pd.read_csv('Churn_DataDescription.csv')
+
+# 1. Find duplicate records based on CustomerID column
+duplicate_records = churn.duplicated(subset=['CustomerID']).sum()
+print(f"Number of duplicate records based on CustomerID: {duplicate_records}")
+
+# 2. Find total number of missing values for TotalCharges
+missing_total_charges = churn['TotalCharges'].isnull().sum()
+print(f"Total number of missing values for TotalCharges: {missing_total_charges}")
+
+# 3. Calculate average monthly charge
+average_monthly_charge = churn['MonthlyCharges'].mean()
+print(f"Average monthly charge paid by a customer: {average_monthly_charge}")
+
+# 4. Count records in Dependents column that have "1@#"
+dependents_count = (churn['Dependents'] == '1@#').sum()
+print(f"Number of records in Dependents column with '1@#': {dependents_count}")
+
+# 5. Check the data type of the variable 'tenure'
+tenure_dtype = churn['tenure'].dtype
+print(f"Data type of the variable 'tenure': {tenure_dtype}")
