@@ -1,0 +1,73 @@
+# Import libraries
+import requests
+from bs4 import BeautifulSoup
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.probability import FreqDist
+from nltk import ne_chunk, pos_tag
+from pprint import pprint
+
+# Download NLTK data
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('maxent_ne_chunker')
+nltk.download('words')
+
+# Step 1: Fetch web page content
+def fetch_webpage_content(url):
+    try:
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+            page_text = ' '.join(p.text for p in soup.find_all('p'))
+            return page_text if page_text.strip() else None
+        else:
+            print(f"Error: Unable to fetch webpage. Status code {response.status_code}")
+            return None
+    except requests.RequestException as e:
+        print(f"Request error: {e}")
+        return None
+
+# Step 2: Preprocess the text
+def preprocess_text(text):
+    stop_words = set(stopwords.words('english'))
+    tokens = word_tokenize(text.lower())
+    words = [word for word in tokens if word.isalpha() and word not in stop_words]
+    return words
+
+# Step 3: Frequency analysis
+def identify_topics(words, num_topics=10):
+    return FreqDist(words).most_common(num_topics)
+
+# Step 4: Named Entity Recognition
+def named_entity_recognition(text):
+    tokens = word_tokenize(text)
+    pos_tags = pos_tag(tokens)
+    ner_tree = ne_chunk(pos_tags, binary=False)
+    named_entities = [
+        (" ".join(c[0] for c in subtree), subtree.label())
+        for subtree in ner_tree if hasattr(subtree, 'label')
+    ]
+    return named_entities
+
+# Main execution
+url = 'https://en.wikipedia.org/wiki/Natural_language_processing'
+page_content = fetch_webpage_content(url)
+
+if page_content:
+    print("Web Page Content Fetched Successfully!\n")
+
+    processed_text = preprocess_text(page_content)
+    print(f"Processed Text Sample: {processed_text[:20]}\n")
+
+    topics = identify_topics(processed_text)
+    print("Most Common Topics Based on Word Frequency:")
+    for word, freq in topics:
+        print(f"{word}: {freq}")
+    print()
+
+    print("Named Entities in the Web Page:")
+    ner_result = named_entity_recognition(page_content)
+    pprint(ner_result if ner_result else "No named entities found.")

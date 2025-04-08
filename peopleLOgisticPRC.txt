@@ -1,0 +1,129 @@
+Task 1: Logistic Regression Model (Random State = 42)
+python
+Copy
+Edit
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+
+# Load the dataset
+df = pd.read_csv('People Charm case.csv')
+
+# Define features and target
+X = df.drop(columns='numberOfProjects')
+y = df['numberOfProjects']
+
+# Split the data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
+
+# Create a preprocessor
+preprocessor = ColumnTransformer(transformers=[
+    ('num', StandardScaler(), X.select_dtypes(include=['int64', 'float64']).columns),
+    ('cat', OneHotEncoder(), X.select_dtypes(include=['object']).columns)
+])
+
+# Create the pipeline
+model = Pipeline(steps=[
+    ('preprocessor', preprocessor),
+    ('classifier', LogisticRegression(random_state=42))
+])
+
+# Train the model
+model.fit(X_train, y_train)
+
+# Predict and evaluate
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print(f'Accuracy score: {accuracy:.4f}')
+✅ Task 2: Logistic Regression Model (Random State = 2) – Misclassified Samples
+python
+Copy
+Edit
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import confusion_matrix
+import numpy as np
+
+# Load the dataset
+data = pd.read_csv('People Charm case.csv')
+
+# Define features and target
+X = data.drop(columns='numberOfProjects')
+y = data['numberOfProjects']
+
+# Categorical columns
+categorical_columns = X.select_dtypes(include=['object']).columns
+
+# Preprocessor
+preprocessor = ColumnTransformer(transformers=[
+    ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_columns)
+], remainder='passthrough')
+
+# Pipeline
+pipeline = Pipeline(steps=[
+    ('preprocessor', preprocessor),
+    ('classifier', LogisticRegression(max_iter=1000, random_state=2))
+])
+
+# Train/test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=2)
+
+# Train and predict
+pipeline.fit(X_train, y_train)
+y_pred = pipeline.predict(X_test)
+
+# Misclassified samples
+cm = confusion_matrix(y_test, y_pred)
+misclassified_samples = np.sum(cm) - np.trace(cm)
+print(f"Number of misclassified samples: {misclassified_samples}")
+✅ Task 3: k-Nearest Neighbors Model (Random State = 0, k = 2)
+python
+Copy
+Edit
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import accuracy_score
+
+# Load the dataset
+data = pd.read_csv('People Charm case.csv')
+
+# Define features and target
+X = data.drop(columns='numberOfProjects')
+y = data['numberOfProjects']
+
+# Categorical columns
+categorical_columns = X.select_dtypes(include=['object']).columns
+
+# Preprocessor
+preprocessor = ColumnTransformer(transformers=[
+    ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_columns)
+], remainder='passthrough')
+
+# Pipeline
+pipeline = Pipeline(steps=[
+    ('preprocessor', preprocessor),
+    ('classifier', KNeighborsClassifier(n_neighbors=2))
+])
+
+# Train/test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=0)
+
+# Train and predict
+pipeline.fit(X_train, y_train)
+y_pred = pipeline.predict(X_test)
+
+# Accuracy
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy score: {accuracy:.2f}")
